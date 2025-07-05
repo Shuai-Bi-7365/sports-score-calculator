@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>临沂市初中学业水平考试体育与健康项目分数计算器</title>
+    <meta name="keywords" content="临沂中考体育成绩, 临沂市中考体测, 体育分数计算器, 初中学业水平考试, 临沂体育健康项目分数, 中考体育加分">
+    <meta name="description" content="临沂市初中学业水平考试体育与健康项目分数计算器，支持男女生各项目分数精准计算，支持BMI、肺活量、50米、坐位体前屈、立定跳远、引体向上/仰卧起坐、一千米/八百米等评分及加分标准，自动计算总分，并显示各项成绩。">
+
+    <!-- 百度收录 -->
+    <meta name="baidu-site-verification" content="请替换为你自己的百度验证code">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: 'Microsoft YaHei', Arial, sans-serif; background: #f6f9fb; margin: 0; }
+        .container { max-width: 650px; margin: 30px auto 0 auto; background: #fff; padding: 32px 28px 28px 28px; border-radius: 12px; box-shadow: 0 6px 24px #0001; }
+        h1 { text-align: center; margin-bottom: 18px; font-size: 1.8em; }
+        h2 { margin-top: 30px; font-size: 1.2em; }
+        label { display: block; margin-top: 16px; margin-bottom: 6px; }
+        input[type="number"] { width: 110px; padding: 6px; border: 1px solid #ccc; border-radius: 5px; }
+        select { padding: 6px 12px; border-radius: 5px; }
+        .row { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; margin-bottom: 8px; }
+        .score-table { width: 100%; border-collapse: collapse; margin-top: 18px;}
+        .score-table th, .score-table td { border: 1px solid #ddd; padding: 8px 4px; text-align: center;}
+        .score-table th { background: #f0f2f6; }
+        .result { text-align: center; margin-top: 25px; font-size: 1.35em; }
+        .tip { color: #888; font-size: 0.95em; margin-top: 6px; }
+        .btn { background: #1187e2; color: #fff; border: none; border-radius: 5px; padding: 8px 30px; font-size: 1.1em; margin-top: 16px; cursor: pointer; }
+        .btn:active { background: #126ac7; }
+        .info { color: #f66; font-size: 0.98em; margin-top: 8px; text-align: center; }
+        @media (max-width: 700px) {
+            .container { padding: 10px 2vw; }
+            .score-table th, .score-table td { font-size: 0.97em;}
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>临沂市初中学业水平考试<br>体育与健康项目分数计算器</h1>
+        <div>
+            <div class="row">
+                <label for="gender">性别：</label>
+                <select id="gender">
+                    <option value="male">男生</option>
+                    <option value="female">女生</option>
+                </select>
+            </div>
+            <div class="row">
+                <label for="height">身高(cm)：</label>
+                <input id="height" type="number" min="100" max="220" step="0.1" placeholder="如170">
+                <label for="weight">体重(kg)：</label>
+                <input id="weight" type="number" min="25" max="130" step="0.1" placeholder="如60">
+            </div>
+            <div class="row">
+                <label for="vital">肺活量(ml)：</label>
+                <input id="vital" type="number" min="800" max="7000" placeholder="如3200">
+            </div>
+            <div class="row">
+                <label for="run50">50米跑(秒)：</label>
+                <input id="run50" type="number" min="6" max="20" step="0.01" placeholder="如8.5">
+            </div>
+            <div class="row">
+                <label for="sitReach">坐位体前屈(cm)：</label>
+                <input id="sitReach" type="number" min="-10" max="40" step="0.1" placeholder="如12.3">
+            </div>
+            <div class="row">
+                <label for="broadJump">立定跳远(cm)：</label>
+                <input id="broadJump" type="number" min="80" max="350" placeholder="如210">
+            </div>
+            <div class="row" id="pullUpsRow">
+                <label for="pullUps">引体向上(次)：</label>
+                <input id="pullUps" type="number" min="0" max="30" placeholder="如10">
+            </div>
+            <div class="row" id="sitUpsRow" style="display:none">
+                <label for="sitUps">仰卧起坐(次)：</label>
+                <input id="sitUps" type="number" min="0" max="80" placeholder="如35">
+            </div>
+            <div class="row" id="run1000Row">
+                <label for="run1000">1000米跑(分'秒")：</label>
+                <input id="run1000_min" type="number" min="2" max="15" style="width:45px" placeholder="分">
+                <span>'</span>
+                <input id="run1000_sec" type="number" min="0" max="59" style="width:45px" placeholder="秒">
+            </div>
+            <div class="row" id="run800Row" style="display:none">
+                <label for="run800">800米跑(分'秒")：</label>
+                <input id="run800_min" type="number" min="2" max="15" style="width:45px" placeholder="分">
+                <span>'</span>
+                <input id="run800_sec" type="number" min="0" max="59" style="width:45px" placeholder="秒">
+            </div>
+            <div class="tip">加分规则见页面底部，分数取整显示，最高显示60分，最终总分乘60%取整</div>
+            <button class="btn" onclick="calculate()">计算成绩</button>
+        </div>
+        <div class="result" id="result"></div>
+        <table class="score-table" id="scoreTable" style="display:none;">
+            <thead>
+                <tr>
+                    <th>项目</th>
+                    <th>原始得分</th>
+                    <th>权重系数</th>
+                    <th>计入成绩</th>
+                </tr>
+            </thead>
+            <tbody id="scoreTableBody"></tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="3">加权分</th>
+                    <th id="totalScore"></th>
+                </tr>
+                <tr>
+                    <th colspan="3">最终总分(×60%)</th>
+                    <th id="finalTotal"></th>
+                </tr>
+            </tfoot>
+        </table>
+        <div class="info" id="info"></div>
+        <h2>临沂中考体育计分权重与加分说明</h2>
+        <ul style="font-size:0.99em;line-height:1.7;">
+            <li>各项成绩均为百分制，最终分数=各项得分*权重，加权求和，最后乘0.6取整。</li>
+            <li>BMI、肺活量(15%)，坐位体前屈、立定跳远(10%)，50米跑、1000米(男)/800米(女)(20%)，引体向上(男)/仰卧起坐(女)(10%)。</li>
+            <li>男生引体向上超15次、女生仰卧起坐超52次，每多1次+1分（最多+10分）；1000米(男)≤3'40"每快5秒+1分（最多+10分）；800米(女)≤3'25"每快5秒+1分（最多+10分）。</li>
+            <li>每项成绩分数四舍五入，单项最高计入60分。</li>
+        </ul>
+    </div>
+    <script>
+        // 性别切换
+        document.getElementById('gender').addEventListener('change', function() {
+            if(this.value === 'male') {
+                document.getElementById('pullUpsRow').style.display = '';
+                document.getElementById('run1000Row').style.display = '';
+                document.getElementById('sitUpsRow').style.display = 'none';
+                document.getElementById('run800Row').style.display = 'none';
+            } else {
+                document.getElementById('pullUpsRow').style.display = 'none';
+                document.getElementById('run1000Row').style.display = 'none';
+                document.getElementById('sitUpsRow').style.display = '';
+                document.getElementById('run800Row').style.display = '';
+            }
+        });
+
+        // 工具函数
+        function toNum(val) {
+            let n = parseFloat(val);
+            return isNaN(n) ? null : n;
+        }
+        function roundAndCap(val) {
+            let v = Math.round(val);
+            return v > 60 ? 60 : v;
+        }
+        // BMI分数
+        function scoreBMI(gender, bmi) {
+            if(gender==='male') {
+                if(bmi >= 15.8 && bmi <= 22.8) return 100;
+                else if((bmi < 15.7) || (bmi > 22.9 && bmi <= 26.0)) return 80;
+                else if(bmi >= 26.1) return 60;
+                else return 0;
+            } else {
+                if(bmi >= 16.0 && bmi <= 22.6) return 100;
+                else if((bmi < 16.0) || (bmi > 22.6 && bmi <= 25.1)) return 80;
+                else if(bmi >= 25.1) return 60;
+                else return 0;
+            }
+        }
+        // 肺活量分数
+        function scoreVital(gender, v) {
+            if(gender==='male') {
+                if(v >= 4240) return 100;
+                if(v >= 4120) return 95;
+                if(v >= 4000) return 90;
+                if(v >= 3750) return 87;
+                if(v >= 3500) return 80;
+                if(v >= 3380) return 78;
+                if(v >= 3260) return 76;
+                if(v >= 3140) return 75;
+                if(v >= 3020) return 72;
+                if(v >= 2900) return 70;
+                if(v >= 2780) return 68;
+                if(v >= 2660) return 66;
+                if(v >= 2540) return 64;
+                if(v >= 2420) return 63;
+                if(v >= 2300) return 60;
+                if(v >= 2180) return 50;
+                if(v >= 2060) return 40;
+                if(v >= 1940) return 30;
+                if(v >= 1820) return 20;
+                if(v >= 1700) return 10;
+                return 0;
+            } else {
+                if(v >= 3050) return 100;
+                if(v >= 3000) return 95;
+                if(v >= 2950) return 90;
+                if(v >= 2800) return 87;
+                if(v >= 2650) return 84;
+                if(v >= 2550) return 80;
+                if(v >= 2450) return 78;
+                if(v >= 2350) return 75;
+                if(v >= 2250) return 72;
+                if(v >= 2150) return 70;
+                if(v >= 2050) return 68;
+                if(v >= 1950) return 66;
+                if(v >= 1850) return 64;
+                if(v >= 1750) return 63;
+                if(v >= 1650) return 60;
+                if(v >= 1610) return 50;
+                if(v >= 1570) return 40;
+                if(v >= 1530) return 30;
+                if(v >= 1490) return 20;
+                if(v >= 1450) return 10;
+                return 0;
+            }
+        }
+        // 50米跑分数
+        function score50m(gender, s) {
+            if(gender==='male') {
+                if(s <= 7.3) return 100;
+                if(s <= 7.4) return 95;
+                if(s <= 7.5) return 90;
+                if(s <= 7.6) return 87;
+                if(s <= 7.7) return 80;
+                if(s <= 7.9) return 78;
+                if(s <= 8.1) return 76;
+                if(s <= 8.3) return 75;
+                if(s <= 8.5) return 72;
+                if(s <= 8.7) return 70;
+                if(s <= 8.9) return 68;
+                if(s <= 9.1) return 66;
+                if(s <= 9.3) return 64;
+                if(s <= 9.5) return 63;
+                if(s <= 9.7) return 60;
+                if(s <= 9.9) return 50;
+                if(s <= 10.1) return 40;
+                if(s <= 10.3) return 30;
+                if(s <= 10.5) return 20;
+                if(s <= 10.7) return 10;
+                return 0;
+            } else {
+                if(s <= 7.9) return 100;
+                if(s <= 8.0) return 98;
+                if(s <= 8.1) return 90;
+                if(s <= 8.4) return 87;
+                if(s <= 8.7) return 84;
+                if(s <= 8.9) return 80;
+                if(s <= 9.1) return 78;
+                if(s <= 9.3) return 75;
+                if(s <= 9.5) return 72;
+                if(s <= 9.7) return 70;
+                if(s <= 9.9) return 68;
+                if(s <= 10.1) return 66;
+                if(s <= 10.3) return 64;
+                if(s <= 10.5) return 63;
+                if(s <= 10.7) return 60;
+                if(s <= 10.9) return 50;
+                if(s <= 11.1) return 40;
+                if(s <= 11.3) return 30;
+                if(s <= 11.5) return 20;
+                if(s <= 11.7) return 10;
+                return 0;
+            }
+        }
+        // 坐位体前屈
+        function scoreSitReach(gender, cm) {
+            if(gender==='male') {
+                if(cm >= 21.6) return 100;
+                if(cm >= 19.7) return 95;
+                if(cm >= 17.8) return 90;
+                if(cm >= 15.8) return 87;
+                if(cm >= 13.8) return 80;
+                if(cm >= 12.4) return 78;
+                if(cm >= 11.0) return 76;
+                if(cm >= 9.6) return 75;
+                if(cm >= 8.2) return 72;
+                if(cm >= 6.8) return 70;
+                if(cm >= 5.4) return 68;
+                if(cm >= 4.0) return 66;
+                if(cm >= 2.6) return 64;
+                if(cm >= 1.2) return 63;
+                if(cm >= -0.2) return 60;
+                if(cm >= -1.4) return 50;
+                if(cm >= -2.6) return 40;
+                if(cm >= -3.8) return 30;
+                if(cm >= -5.0) return 20;
+                if(cm >= -6.2) return 10;
+                return 0;
+            } else {
+                if(cm >= 23.5) return 100;
+                if(cm >= 21.8) return 98;
+                if(cm >= 20.1) return 90;
+                if(cm >= 18.4) return 87;
+                if(cm >= 16.7) return 84;
+                if(cm >= 15.4) return 80;
+                if(cm >= 14.1) return 78;
+                if(cm >= 12.8) return 75;
+                if(cm >= 11.5) return 72;
+                if(cm >= 10.2) return 70;
+                if(cm >= 8.9) return 68;
+                if(cm >= 7.6) return 66;
+                if(cm >= 6.3) return 64;
+                if(cm >= 5.0) return 63;
+                if(cm >= 3.7) return 60;
+                if(cm >= 2.9) return 50;
+                if(cm >= 2.1) return 40;
+                if(cm >= 1.3) return 30;
+                if(cm >= 0.5) return 20;
+                if(cm >= -0.3) return 10;
+                return 0;
+            }
+        }
+        // 立定跳远
+        function scoreBroadJump(gender, cm) {
+            if(gender==='male') {
+                if(cm >= 250) return 100;
+                if(cm >= 245) return 95;
+                if(cm >= 240) return 90;
+                if(cm >= 233) return 87;
+                if(cm >= 225) return 80;
+                if(cm >= 221) return 78;
+                if(cm >= 217) return 76;
+                if(cm >= 213) return 75;
+                if(cm >= 209) return 72;
+                if(cm >= 205) return 70;
+                if(cm >= 201) return 68;
+                if(cm >= 197) return 66;
+                if(cm >= 193) return 64;
+                if(cm >= 189) return 63;
+                if(cm >= 185) return 60;
+                if(cm >= 180) return 50;
+                if(cm >= 175) return 40;
+                if(cm >= 170) return 30;
+                if(cm >= 165) return 20;
+                if(cm >= 160) return 10;
+                return 0;
+            } else {
+                if(cm >= 202) return 100;
+                if(cm >= 196) return 98;
+                if(cm >= 190) return 90;
+                if(cm >= 183) return 87;
+                if(cm >= 176) return 84;
+                if(cm >= 173) return 80;
+                if(cm >= 170) return 78;
+                if(cm >= 167) return 75;
+                if(cm >= 164) return 72;
+                if(cm >= 161) return 70;
+                if(cm >= 158) return 68;
+                if(cm >= 155) return 66;
+                if(cm >= 152) return 64;
+                if(cm >= 149) return 63;
+                if(cm >= 146) return 60;
+                if(cm >= 141) return 50;
+                if(cm >= 136) return 40;
+                if(cm >= 131) return 30;
+                if(cm >= 126) return 20;
+                if(cm >= 121) return 10;
+                return 0;
+            }
+        }
+        // 引体向上/仰卧起坐（含加分）
+        function scorePullUps(n) {
+            if(n >= 15) return Math.min(100 + Math.min(n - 15, 10), 110);
+            if(n >= 14) return 95;
+            if(n >= 13) return 90;
+            if(n >= 12) return 87;
+            if(n >= 11) return 80;
+            if(n >= 10) return 78;
+            if(n >= 9) return 76;
+            if(n >= 8) return 75;
+            if(n >= 7) return 72;
+            if(n >= 6) return 70;
+            if(n >= 5) return 68;
+            if(n >= 4) return 66;
+            if(n >= 3) return 64;
+            if(n >= 2) return 63;
+            if(n >= 1) return 60;
+            return 0;
+        }
+        function scoreSitUps(n) {
+            if(n >= 52) return Math.min(100 + Math.min(n - 52, 10), 110);
+            if(n >= 50) return 98;
+            if(n >= 48) return 90;
+            if(n >= 45) return 87;
+            if(n >= 42) return 84;
+            if(n >= 40) return 80;
+            if(n >= 38) return 78;
+            if(n >= 36) return 75;
+            if(n >= 34) return 72;
+            if(n >= 32) return 70;
+            if(n >= 30) return 68;
+            if(n >= 28) return 66;
+            if(n >= 26) return 64;
+            if(n >= 24) return 63;
+            if(n >= 22) return 60;
+            if(n >= 20) return 50;
+            if(n >= 18) return 40;
+            if(n >= 16) return 30;
+            if(n >= 14) return 20;
+            if(n >= 12) return 10;
+            return 0;
+        }
+        // 1000米/800米（含加分）  (单位：秒)
+        function scoreRun1000(sec) {
+            // 满分220，3分40=220s，220及以内满分
+            if(sec <= 220) return Math.min(100 + Math.min(Math.floor((220-sec)/5), 10), 110);
+            if(sec <= 225) return 95;
+            if(sec <= 230) return 90;
+            if(sec <= 237) return 87;
+            if(sec <= 245) return 80;
+            if(sec <= 250) return 78;
+            if(sec <= 255) return 76;
+            if(sec <= 260) return 75;
+            if(sec <= 265) return 72;
+            if(sec <= 270) return 70;
+            if(sec <= 275) return 68;
+            if(sec <= 280) return 66;
+            if(sec <= 285) return 64;
+            if(sec <= 290) return 63;
+            if(sec <= 295) return 60;
+            if(sec <= 315) return 50;
+            if(sec <= 335) return 40;
+            if(sec <= 355) return 30;
+            if(sec <= 375) return 20;
+            if(sec <= 395) return 10;
+            return 0;
+        }
+        function scoreRun800(sec) {
+            // 满分205，3分25=205s
+            if(sec <= 205) return Math.min(100 + Math.min(Math.floor((205-sec)/5), 10), 110);
+            if(sec <= 212) return 98;
+            if(sec <= 219) return 90;
+            if(sec <= 227) return 87;
+            if(sec <= 235) return 84;
+            if(sec <= 240) return 80;
+            if(sec <= 245) return 78;
+            if(sec <= 250) return 75;
+            if(sec <= 255) return 72;
+            if(sec <= 260) return 70;
+            if(sec <= 265) return 68;
+            if(sec <= 270) return 66;
+            if(sec <= 275) return 64;
+            if(sec <= 280) return 63;
+            if(sec <= 285) return 60;
+            if(sec <= 295) return 50;
+            if(sec <= 305) return 40;
+            if(sec <= 315) return 30;
+            if(sec <= 325) return 20;
+            if(sec <= 335) return 10;
+            return 0;
+        }
+
+        function calculate() {
+            let gender = document.getElementById("gender").value;
+            // 基本输入
+            let height = toNum(document.getElementById("height").value);
+            let weight = toNum(document.getElementById("weight").value);
+            let vital = toNum(document.getElementById("vital").value);
+            let run50 = toNum(document.getElementById("run50").value);
+            let sitReach = toNum(document.getElementById("sitReach").value);
+            let broadJump = toNum(document.getElementById("broadJump").value);
+            let pullUps = toNum(document.getElementById("pullUps").value);
+            let sitUps = toNum(document.getElementById("sitUps").value);
+            let run1000_min = toNum(document.getElementById("run1000_min").value);
+            let run1000_sec = toNum(document.getElementById("run1000_sec").value);
+            let run800_min = toNum(document.getElementById("run800_min").value);
+            let run800_sec = toNum(document.getElementById("run800_sec").value);
+
+            // 校验
+            let info = '';
+            if(!height || !weight || !vital || !run50 || !sitReach || !broadJump || 
+                (gender==="male" && (!pullUps && pullUps!==0)) ||
+                (gender==="female" && (!sitUps && sitUps!==0)) ||
+                (gender==="male" && (run1000_min===null || run1000_sec===null)) ||
+                (gender==="female" && (run800_min===null || run800_sec===null))
+                ){
+                document.getElementById("result").innerHTML = '';
+                document.getElementById("scoreTable").style.display = "none";
+                document.getElementById("info").innerHTML = '请填写所有项目数据！';
+                return;
+            }
+
+            // BMI
+            let bmi = weight / ((height/100)*(height/100));
+            let bmiScore = scoreBMI(gender, bmi);
+
+            // 肺活量
+            let vitalScore = scoreVital(gender, vital);
+
+            // 50米
+            let run50Score = score50m(gender, run50);
+
+            // 坐位体前屈
+            let sitReachScore = scoreSitReach(gender, sitReach);
+
+            // 立定跳远
+            let broadJumpScore = scoreBroadJump(gender, broadJump);
+
+            // 引体向上/仰卧起坐
+            let upScore = gender==='male' ? scorePullUps(pullUps) : scoreSitUps(sitUps);
+
+            // 1000米/800米
+            let runScore = 0;
+            if(gender==='male') {
+                runScore = scoreRun1000((run1000_min*60)+run1000_sec);
+            } else {
+                runScore = scoreRun800((run800_min*60)+run800_sec);
+            }
+
+            // 权重
+            let items = [];
+            items.push({
+                name: 'BMI',
+                score: bmiScore,
+                factor: 0.15,
+                show: roundAndCap(bmiScore * 0.15)
+            });
+            items.push({
+                name: '肺活量',
+                score: vitalScore,
+                factor: 0.15,
+                show: roundAndCap(vitalScore * 0.15)
+            });
+            items.push({
+                name: '50米跑',
+                score: run50Score,
+                factor: 0.20,
+                show: roundAndCap(run50Score * 0.20)
+            });
+            items.push({
+                name: '坐位体前屈',
+                score: sitReachScore,
+                factor: 0.10,
+                show: roundAndCap(sitReachScore * 0.10)
+            });
+            items.push({
+                name: '立定跳远',
+                score: broadJumpScore,
+                factor: 0.10,
+                show: roundAndCap(broadJumpScore * 0.10)
+            });
+            if(gender==='male') {
+                items.push({
+                    name: '引体向上',
+                    score: upScore,
+                    factor: 0.10,
+                    show: roundAndCap(upScore * 0.10)
+                });
+                items.push({
+                    name: '1000米跑',
+                    score: runScore,
+                    factor: 0.20,
+                    show: roundAndCap(runScore * 0.20)
+                });
+            } else {
+                items.push({
+                    name: '仰卧起坐',
+                    score: upScore,
+                    factor: 0.10,
+                    show: roundAndCap(upScore * 0.10)
+                });
+                items.push({
+                    name: '800米跑',
+                    score: runScore,
+                    factor: 0.20,
+                    show: roundAndCap(runScore * 0.20)
+                });
+            }
+
+            // 总分
+            let total = 0;
+            items.forEach(i => total += i.show);
+
+            // 最终总分乘0.6四舍五入
+            let finalTotal = Math.round(total * 0.6);
+
+            // 结果显示
+            let tableHtml = '';
+            items.forEach(i => {
+                tableHtml += `<tr>
+                    <td>${i.name}</td>
+                    <td>${Math.round(i.score)}</td>
+                    <td>${Math.round(i.factor*100)}%</td>
+                    <td>${i.show}</td>
+                </tr>`;
+            });
+            document.getElementById("scoreTableBody").innerHTML = tableHtml;
+            document.getElementById("scoreTable").style.display = "";
+            document.getElementById("totalScore").innerHTML = total;
+            document.getElementById("finalTotal").innerHTML = finalTotal;
+            document.getElementById("result").innerHTML = `<b>体育最终总分：<span style="color:#1270e6">${finalTotal}</span> 分</b>`;
+            document.getElementById("info").innerHTML = `您的BMI为${bmi.toFixed(2)}，分数仅供参考。`;
+        }
+    </script>
+</body>
+</html>
